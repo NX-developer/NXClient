@@ -1,0 +1,18 @@
+# Build outputs
+build/
+out/
+
+# Gradle cache
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Claude Code
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db

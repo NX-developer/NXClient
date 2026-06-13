@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "nxclient",
+    "name": "NX Client",
+    "description": "A clean, high-performance Minecraft 1.8.9 PvP client. Hypixel-safe, visual/QoL only.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "authorList": ["NX Team"],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

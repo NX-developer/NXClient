@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.7.10",
+  "package": "net.nx.client.mixin",
+  "refmap": "mixins.nxclient.refmap.json",
+  "target": "@env(DEFAULT)",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinEntityRenderer",
+    "MixinItemRenderer",
+    "MixinModelBiped",
+    "MixinRenderManager",
+    "MixinGuiMainMenu",
+    "MixinAbstractClientPlayer",
+    "MixinNetworkPlayerInfo"
+  ],
+  "client": [],
+  "server": []
+}
