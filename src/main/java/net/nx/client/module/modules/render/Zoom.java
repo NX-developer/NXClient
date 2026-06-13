@@ -38,10 +38,10 @@ public class Zoom extends Module {
         boolean holding = Keyboard.isKeyDown(getKeybind());
 
         if (holding) {
-            targetFOV = (float) zoomLevel.getValue();
+            targetFOV = zoomLevel.getValue().floatValue();
             if (!wasZoomed && scaleSensitivity.isEnabled()) {
                 savedSens = mc.gameSettings.mouseSensitivity;
-                mc.gameSettings.mouseSensitivity = savedSens * ((float) zoomLevel.getValue() / 70f);
+                mc.gameSettings.mouseSensitivity = savedSens * (zoomLevel.getValue().floatValue() / 70f);
             }
             wasZoomed = true;
         } else {

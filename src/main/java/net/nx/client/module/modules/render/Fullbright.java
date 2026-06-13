@@ -30,6 +30,6 @@ public class Fullbright extends Module {
 
     @Override
     public void onUpdate() {
-        mc.gameSettings.gammaSetting = (float) gamma.getValue();
+        mc.gameSettings.gammaSetting = gamma.getValue().floatValue();
     }
 }

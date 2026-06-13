@@ -23,7 +23,7 @@ public class MotionBlur extends Module {
 
     @SubscribeEvent
     public void onRenderWorld(RenderWorldLastEvent event) {
-        float s = (float) strength.getValue();
+        float s = strength.getValue().floatValue();
         GL11.glAccum(GL11.GL_MULT, s);
         GL11.glAccum(GL11.GL_ACCUM, 1f - s);
         GL11.glAccum(GL11.GL_RETURN, 1f);

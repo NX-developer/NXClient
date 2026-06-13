@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
@@ -50,9 +51,15 @@ public class BlockOverlay extends Module {
         Block block = mc.theWorld.getBlockState(pos).getBlock();
         if (block == null) return;
 
-        double x = pos.getX() - mc.getRenderManager().renderPosX;
-        double y = pos.getY() - mc.getRenderManager().renderPosY;
-        double z = pos.getZ() - mc.getRenderManager().renderPosZ;
+        Entity rv = mc.getRenderViewEntity();
+        float pt = event.partialTicks;
+        double rpX = rv.lastTickPosX + (rv.posX - rv.lastTickPosX) * pt;
+        double rpY = rv.lastTickPosY + (rv.posY - rv.lastTickPosY) * pt;
+        double rpZ = rv.lastTickPosZ + (rv.posZ - rv.lastTickPosZ) * pt;
+
+        double x = pos.getX() - rpX;
+        double y = pos.getY() - rpY;
+        double z = pos.getZ() - rpZ;
         double eps = 0.002;
 
         GlStateManager.enableBlend();
