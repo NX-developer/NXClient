@@ -35,14 +35,55 @@ jobs:
         run: chmod +x gradlew
 
       - name: Setup Forge workspace
-        run: ./gradlew setupDecompWorkspace --no-daemon
+        id: setup
+        run: ./gradlew setupDecompWorkspace --no-daemon 2>&1 | tee setup.log
         env:
           GRADLE_OPTS: "-Xmx3G"
 
+      - name: Collect setup error
+        if: failure() && steps.setup.outcome == 'failure'
+        run: |
+          echo "=== NXClient Build Error ===" > error.txt
+          echo "Step: setupDecompWorkspace" >> error.txt
+          echo "Date: $(date -u)" >> error.txt
+          echo "Commit: ${{ github.sha }}" >> error.txt
+          echo "Branch: ${{ github.ref_name }}" >> error.txt
+          echo "" >> error.txt
+          echo "--- Output ---" >> error.txt
+          cat setup.log >> error.txt
+
       - name: Build
-        run: ./gradlew build --no-daemon
+        id: build
+        run: ./gradlew build --no-daemon 2>&1 | tee build.log
         env:
           GRADLE_OPTS: "-Xmx3G"
+
+      - name: Collect build error
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          echo "=== NXClient Build Error ===" > error.txt
+          echo "Step: build" >> error.txt
+          echo "Date: $(date -u)" >> error.txt
+          echo "Commit: ${{ github.sha }}" >> error.txt
+          echo "Branch: ${{ github.ref_name }}" >> error.txt
+          echo "" >> error.txt
+          echo "--- Gradle Output ---" >> error.txt
+          cat build.log >> error.txt
+          echo "" >> error.txt
+          echo "--- Java Compiler Errors ---" >> error.txt
+          grep -E "^.+\.java:[0-9]+: error:" build.log >> error.txt || echo "(no javac errors found)" >> error.txt
+          echo "" >> error.txt
+          echo "--- Exception / Stacktrace ---" >> error.txt
+          grep -A 10 "Exception\|FAILED\|BUILD FAILED" build.log | head -60 >> error.txt || true
+
+      - name: Upload error.txt on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: error
+          path: error.txt
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
