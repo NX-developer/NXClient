@@ -42,7 +42,6 @@ public class ClickGUI extends GuiScreen {
         searchField.setMaxStringLength(32);
         searchField.setFocused(false);
         searchField.setCanLoseFocus(true);
-        searchField.setGuiBackgroundColor(NXColors.BACKGROUND_DARK);
     }
 
     @Override

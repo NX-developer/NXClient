@@ -25,7 +25,7 @@ public class MixinItemRenderer {
         if (anim == null || !anim.isEnabled()) return;
 
         if (anim.oldSwing.isEnabled()) {
-            float speed = (float) anim.swingSpeed.getValue();
+            float speed = anim.swingSpeed.getValue().floatValue();
             Minecraft mc = Minecraft.getMinecraft();
             if (mc.thePlayer != null) {
                 mc.thePlayer.swingProgressInt = (int)(mc.thePlayer.swingProgressInt * speed);

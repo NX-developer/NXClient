@@ -18,6 +18,6 @@ public class ChromaUI extends Module {
 
     public int getChromaColor(double xOffset) {
         float hue = (float)(((System.currentTimeMillis() / (1000.0 / speed.getValue())) + xOffset * 0.02) % 1.0);
-        return java.awt.Color.getHSBColor(hue, (float) saturation.getValue(), 1f).getRGB() | 0xFF000000;
+        return java.awt.Color.getHSBColor(hue, saturation.getValue().floatValue(), 1f).getRGB() | 0xFF000000;
     }
 }
