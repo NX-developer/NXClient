@@ -35,46 +35,47 @@ jobs:
         run: chmod +x gradlew
 
       - name: Setup Forge workspace
-        id: setup
-        run: ./gradlew setupDecompWorkspace --no-daemon 2>&1 | tee setup.log
+        run: |
+          set -o pipefail
+          ./gradlew setupDecompWorkspace --no-daemon 2>&1 | tee setup.log
         env:
           GRADLE_OPTS: "-Xmx3G"
-
-      - name: Collect setup error
-        if: failure() && steps.setup.outcome == 'failure'
-        run: |
-          echo "=== NXClient Build Error ===" > error.txt
-          echo "Step: setupDecompWorkspace" >> error.txt
-          echo "Date: $(date -u)" >> error.txt
-          echo "Commit: ${{ github.sha }}" >> error.txt
-          echo "Branch: ${{ github.ref_name }}" >> error.txt
-          echo "" >> error.txt
-          echo "--- Output ---" >> error.txt
-          cat setup.log >> error.txt
 
       - name: Build
-        id: build
-        run: ./gradlew build --no-daemon 2>&1 | tee build.log
+        run: |
+          set -o pipefail
+          ./gradlew build --no-daemon 2>&1 | tee build.log
         env:
           GRADLE_OPTS: "-Xmx3G"
 
-      - name: Collect build error
-        if: failure() && steps.build.outcome == 'failure'
+      - name: Collect error.txt on failure
+        if: failure()
         run: |
-          echo "=== NXClient Build Error ===" > error.txt
-          echo "Step: build" >> error.txt
-          echo "Date: $(date -u)" >> error.txt
-          echo "Commit: ${{ github.sha }}" >> error.txt
-          echo "Branch: ${{ github.ref_name }}" >> error.txt
-          echo "" >> error.txt
-          echo "--- Gradle Output ---" >> error.txt
-          cat build.log >> error.txt
-          echo "" >> error.txt
-          echo "--- Java Compiler Errors ---" >> error.txt
-          grep -E "^.+\.java:[0-9]+: error:" build.log >> error.txt || echo "(no javac errors found)" >> error.txt
-          echo "" >> error.txt
-          echo "--- Exception / Stacktrace ---" >> error.txt
-          grep -A 10 "Exception\|FAILED\|BUILD FAILED" build.log | head -60 >> error.txt || true
+          {
+            echo "=== NXClient Build Error ==="
+            echo "Date    : $(date -u)"
+            echo "Commit  : ${{ github.sha }}"
+            echo "Branch  : ${{ github.ref_name }}"
+            echo "Run URL : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+
+            if [ -f setup.log ]; then
+              echo "====== setupDecompWorkspace output ======"
+              cat setup.log
+              echo ""
+            fi
+
+            if [ -f build.log ]; then
+              echo "====== Build output ======"
+              cat build.log
+              echo ""
+              echo "====== Java compiler errors ======"
+              grep -E "\.java:[0-9]+: error:" build.log || echo "(no javac errors)"
+              echo ""
+              echo "====== Exceptions / BUILD FAILED ======"
+              grep -A 15 "Exception\|BUILD FAILED\|FAILURE:" build.log | head -80 || echo "(none)"
+            fi
+          } > error.txt
 
       - name: Upload error.txt on failure
         if: failure()
@@ -82,10 +83,11 @@ jobs:
         with:
           name: error
           path: error.txt
-          if-no-files-found: ignore
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Upload JAR artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: NXClient-${{ github.sha }}
@@ -93,7 +95,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload to Release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' && success()
         uses: softprops/action-gh-release@v2
         with:
           files: build/libs/*.jar
