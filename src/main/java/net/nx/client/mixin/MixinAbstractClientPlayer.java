@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(AbstractClientPlayer.class)
 public class MixinAbstractClientPlayer {
 
-    @Inject(method = "getLocationCape", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getLocationCape", at = @At("HEAD"), cancellable = true, require = 0)
     private void onGetCapeLocation(CallbackInfoReturnable<ResourceLocation> cir) {
         AbstractClientPlayer player = (AbstractClientPlayer)(Object)this;
         CapeManager cm = NXClient.getInstance().getCapeManager();
@@ -21,7 +21,8 @@ public class MixinAbstractClientPlayer {
         }
     }
 
-    @Inject(method = "hasCape", at = @At("HEAD"), cancellable = true)
+    // require = 0: hasCape may not be found if refmap is incomplete; fail silently rather than crash
+    @Inject(method = "hasCape", at = @At("HEAD"), cancellable = true, require = 0)
     private void onHasCape(CallbackInfoReturnable<Boolean> cir) {
         AbstractClientPlayer player = (AbstractClientPlayer)(Object)this;
         CapeManager cm = NXClient.getInstance().getCapeManager();
