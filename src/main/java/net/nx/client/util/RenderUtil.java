@@ -2,6 +2,7 @@ package net.nx.client.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -15,8 +16,8 @@ public class RenderUtil {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     public static void drawRect(double x, double y, double x2, double y2, int color) {
-        if (x < x2) { double t = x; x = x2; x2 = t; }
-        if (y < y2) { double t = y; y = y2; y2 = t; }
+        if (x > x2) { double t = x; x = x2; x2 = t; }
+        if (y > y2) { double t = y; y = y2; y2 = t; }
 
         Color c = new Color(color, true);
         GlStateManager.enableBlend();
@@ -27,10 +28,10 @@ public class RenderUtil {
         Tessellator tess = Tessellator.getInstance();
         WorldRenderer wr = tess.getWorldRenderer();
         wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+        wr.pos(x,  y,  0).endVertex();
         wr.pos(x,  y2, 0).endVertex();
         wr.pos(x2, y2, 0).endVertex();
         wr.pos(x2, y,  0).endVertex();
-        wr.pos(x,  y,  0).endVertex();
         tess.draw();
 
         GlStateManager.enableTexture2D();
@@ -87,28 +88,32 @@ public class RenderUtil {
         GlStateManager.disableBlend();
     }
 
-    public static void drawBorderedRect(double x, double y, double x2, double y2, double borderWidth, int fill, int border) {
+    public static void drawBorderedRect(double x, double y, double x2, double y2, double bw, int fill, int border) {
         drawRect(x, y, x2, y2, fill);
-        drawRect(x - borderWidth, y - borderWidth, x2 + borderWidth, y, border);
-        drawRect(x - borderWidth, y2, x2 + borderWidth, y2 + borderWidth, border);
-        drawRect(x - borderWidth, y, x, y2, border);
-        drawRect(x2, y, x2 + borderWidth, y2, border);
+        drawRect(x - bw, y - bw, x2 + bw, y, border);
+        drawRect(x - bw, y2, x2 + bw, y2 + bw, border);
+        drawRect(x - bw, y, x, y2, border);
+        drawRect(x2, y, x2 + bw, y2, border);
     }
 
     public static String trimString(FontRenderer fr, String text, int maxWidth) {
         if (fr.getStringWidth(text) <= maxWidth) return text;
-        String suffix = "...";
-        while (!text.isEmpty() && fr.getStringWidth(text + suffix) > maxWidth) {
+        while (!text.isEmpty() && fr.getStringWidth(text + "...") > maxWidth)
             text = text.substring(0, text.length() - 1);
-        }
-        return text + suffix;
+        return text + "...";
     }
 
     public static void scissor(int x, int y, int width, int height) {
-        int scale = mc.gameSettings.guiScale;
-        if (scale == 0) scale = 4;
+        // Use actual ScaledResolution factor, not raw guiScale setting
+        ScaledResolution sr = new ScaledResolution(mc);
+        int factor = sr.getScaleFactor();
         int screenH = mc.displayHeight;
-        GL11.glScissor(x * scale, screenH - (y + height) * scale, width * scale, height * scale);
+        GL11.glScissor(
+            x * factor,
+            screenH - (y + height) * factor,
+            width * factor,
+            height * factor
+        );
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
     }
 
